@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'post_detail.dart';
-import 'adsense.dart';
 
 class BlogPost {
   final String id;
@@ -141,34 +140,14 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-  return ListView.builder(
-    padding: const EdgeInsets.all(16),
-    itemCount: _posts.length + (_posts.length ~/ 3), // 3개 게시물마다 광고 삽입
-    itemBuilder: (context, index) {
-      // 광고 삽입 위치 계산
-      if (index > 0 && index % 4 == 0) { // index 4, 8, 12 ... 에 광고
-        // !!!! 광고 슬롯 ID 수정 !!!!
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: AdsenseAdWidget(
-            adSlotId: '1372504723', // <- 실제 AdSense 슬롯 ID로 교체 완료 (상세 페이지와 다른 슬롯 ID 사용 가능)
-            width: MediaQuery.of(context).size.width > 600 ? 600 : MediaQuery.of(context).size.width - 32, // 너비 제한 추가 고려 (패딩 16*2=32 고려)
-            height: 100, // 광고 크기에 맞게 조절
-          ),
-        );
-        // !!!! 광고 슬롯 ID 수정 끝 !!!!
-    }
-    
-    // 실제 게시물 인덱스 계산 (광고로 인한 오프셋 조정)
-      final postIndex = index - (index ~/ 4);
-      // Bounds check 추가
-      if (postIndex >= _posts.length) {
-        return const SizedBox.shrink(); // 혹시 모를 인덱스 오류 방지
-      }
-      final post = _posts[postIndex];
-      return _buildPostCard(post);
-    },
-  );
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _posts.length,
+      itemBuilder: (context, index) {
+        final post = _posts[index];
+        return _buildPostCard(post);
+      },
+    );
   }
 
   Widget _buildPostCard(BlogPost post) {
@@ -301,21 +280,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-String _truncateContent(String content) {
-  // 마크다운 형식 제거 시도
-  String plainText = content
-      .replaceAll(RegExp(r'#+\s'), '') // 헤더 제거
-      .replaceAll(RegExp(r'\*\*(.*?)\*\*'), r'$1') // 볼드 제거 - r 접두사 추가
-      .replaceAll(RegExp(r'\*(.*?)\*'), r'$1') // 이탤릭 제거 - r 접두사 추가
-      .replaceAll(RegExp(r'\[(.*?)\]\(.*?\)'), r'$1') // 링크 텍스트만 유지 - r 접두사 추가
-      .replaceAll(RegExp(r'```.*?```', dotAll: true), '') // 코드 블록 제거
-      .replaceAll(RegExp(r'`(.*?)`'), r'$1') // 인라인 코드 제거 - r 접두사 추가
-      .replaceAll(RegExp(r'>\s.*?(\n|$)'), '') // 인용 제거
-      .replaceAll(RegExp(r'!\[(.*?)\]\(.*?\)'), ''); // 이미지 제거
-  
-  if (plainText.length <= 200) return plainText;
-  return '${plainText.substring(0, 200)}...';
-}
+  String _truncateContent(String content) {
+    // 마크다운 형식 제거 시도
+    String plainText = content
+        .replaceAll(RegExp(r'#+\s'), '') // 헤더 제거
+        .replaceAll(RegExp(r'\*\*(.*?)\*\*'), r'$1') // 볼드 제거 - r 접두사 추가
+        .replaceAll(RegExp(r'\*(.*?)\*'), r'$1') // 이탤릭 제거 - r 접두사 추가
+        .replaceAll(RegExp(r'\[(.*?)\]\(.*?\)'), r'$1') // 링크 텍스트만 유지 - r 접두사 추가
+        .replaceAll(RegExp(r'```.*?```', dotAll: true), '') // 코드 블록 제거
+        .replaceAll(RegExp(r'`(.*?)`'), r'$1') // 인라인 코드 제거 - r 접두사 추가
+        .replaceAll(RegExp(r'>\s.*?(\n|$)'), '') // 인용 제거
+        .replaceAll(RegExp(r'!\[(.*?)\]\(.*?\)'), ''); // 이미지 제거
+    
+    if (plainText.length <= 200) return plainText;
+    return '${plainText.substring(0, 200)}...';
+  }
 
   String _formatDate(DateTime date) {
     return DateFormat('yyyy년 MM월 dd일').format(date);
